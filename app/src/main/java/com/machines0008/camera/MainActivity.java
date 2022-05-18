@@ -1,6 +1,5 @@
 package com.machines0008.camera;
 
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -12,8 +11,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.machines0008.camera.filter.ImageFilter;
 import com.machines0008.camera.filter.ScanRayFilter;
-import com.machines0008.camera.filter.WaterWaveFilter;
-import com.machines0008.camera.filter.WaveFilter;
 
 import java.io.IOException;
 
