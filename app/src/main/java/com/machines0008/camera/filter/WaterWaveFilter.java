@@ -61,10 +61,10 @@ public class WaterWaveFilter extends ImageFilter {
                 "      vec2 pi = p0 + vec2 (i, j);\n" +
                 "      vec2 hsh = pi;\n" +
                 "      vec2 p = pi + hash22(hsh) ;\n" +
-                "      // hash12 添加随机\n" +
+                "      // hash12 添加隨機值\n" +
                 "      float t = fract (0.3 * u_time + hash12(hsh));\n" +
                 "      vec2 v = p - frag;\n" +
-                "      // 半径：\n" +
+                "      // 半徑：\n" +
                 "      float d = length (v) - (float (MAX_RADIUS) + 1. )*t  ;\n" +
                 "      float h = 1e-3;\n" +
                 "      float d1 = d - h;\n" +
@@ -74,7 +74,7 @@ public class WaterWaveFilter extends ImageFilter {
                 "      circles += 0.5 * normalize (v) * ((p2 - p1) / (2. * h) * (1. - t) * (1. - t));\n" +
                 "    }\n" +
                 "  }\n" +
-                "  // 两轮循环添加了weight个波(取平均)\n" +
+                "  // 兩輪循環取得weight個波(取平均)\n" +
                 "  float weight = float ((MAX_RADIUS * 2 + 1) * (MAX_RADIUS * 2 + 1));\n" +
                 "  circles /= weight;\n" +
                 "  float intensity = mix (0.01, 0.05, smoothstep (0.1, 0.6, abs (fract (0.05 * u_time + .5) * 2. - 1.)));\n" +

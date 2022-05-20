@@ -1,25 +1,17 @@
 package com.machines0008.camera;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.hardware.Camera;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
 import android.widget.ImageView;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.machines0008.camera.view.CameraDrawer;
-import com.machines0008.camera.view.CameraView;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.machines0008.camera.view.CameraView;
 
 public class CameraActivity extends AppCompatActivity {
     private static final String TAG = CameraActivity.class.getSimpleName();

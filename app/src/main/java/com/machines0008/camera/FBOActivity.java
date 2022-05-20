@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -69,7 +68,6 @@ public class FBOActivity extends AppCompatActivity implements FBORender.Callback
             c.moveToFirst();
             int columnIndex = c.getColumnIndex(filePathColumns[0]);
             mImgPath = c.getString(columnIndex);
-            Log.e("wuwang", "img->" + mImgPath);
             Bitmap bmp = BitmapFactory.decodeFile(mImgPath);
             mBmpWidth = bmp.getWidth();
             mBmpHeight = bmp.getHeight();
@@ -82,7 +80,6 @@ public class FBOActivity extends AppCompatActivity implements FBORender.Callback
     @Override
     public void onCall(final ByteBuffer data) {
         new Thread(() -> {
-            Log.e("wuwang", "callback success");
             Bitmap bitmap = Bitmap.createBitmap(mBmpWidth, mBmpHeight, Bitmap.Config.ARGB_8888);
             bitmap.copyPixelsFromBuffer(data);
             saveBitmap(bitmap);
@@ -95,7 +92,7 @@ public class FBOActivity extends AppCompatActivity implements FBORender.Callback
         String path = mImgPath.substring(0, mImgPath.lastIndexOf("/") + 1);
         File folder = new File(path);
         if (!folder.exists() && !folder.mkdirs()) {
-            runOnUiThread(() -> Toast.makeText(FBOActivity.this, "无法保存照片", Toast.LENGTH_SHORT).show());
+            runOnUiThread(() -> Toast.makeText(FBOActivity.this, "無法儲存照片", Toast.LENGTH_SHORT).show());
             return;
         }
         long dataTake = System.currentTimeMillis();

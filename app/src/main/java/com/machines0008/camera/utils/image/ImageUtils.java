@@ -37,7 +37,7 @@ public class ImageUtils {
         }
         float scaleWidth = (float) width / bitmapWidth;
         float scaleHeight = (float) height / bitmapHeight;
-        float scale = scaleWidth < scaleHeight ? scaleWidth : scaleHeight;
+        float scale = Math.min(scaleWidth, scaleHeight);
         Matrix matrix = new Matrix();
         matrix.postScale(scale, scale);
         Bitmap result = Bitmap.createBitmap(source, 0, 0, bitmapWidth, bitmapHeight, matrix, true);

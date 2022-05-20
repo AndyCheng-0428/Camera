@@ -21,9 +21,9 @@ import javax.microedition.khronos.opengles.GL10;
  * Usage:
  **/
 public class CameraDrawer implements GLSurfaceView.Renderer {
-    private int[] texture = new int[1];
+    private final int[] texture = new int[1];
     private Callback callback;
-    private final String vertexShaderCode = "" +
+    private static final String vertexShaderCode = "" +
             "attribute vec4 vPosition;" +
             "attribute vec2 vCoordinate;" +
             "uniform mat4 vMatrix;" +
@@ -33,7 +33,7 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
             "   gl_Position = vMatrix * vPosition;" +
             "   textureCoordinate = (vCoordMatrix * vec4(vCoordinate, 0, 1)).xy;" +
             "}";
-    private final String fragmentShaderCode = "" +
+    private static final String fragmentShaderCode = "" +
             "#extension GL_OES_EGL_image_external : require \r\n" +
             "precision mediump float;" +
             "uniform vec3 changeColor;" +
@@ -46,21 +46,20 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
             "}";
     private FloatBuffer fbVertex;
     private FloatBuffer fbFragment;
-    private float[] matrix = new float[16];
+    private final float[] matrix = new float[16];
     private int width, height;
     private int dataWidth, dataHeight;
-    private KitkatCamera camera;
+    private final KitkatCamera camera;
     private SurfaceTexture surfaceTexture;
     private int program;
     private int cameraId = 1;
-    private int textureId;
-    private float[] vertexPosition = {
+    private final float[] vertexPosition = {
             -1.0f, 1.0f,
             -1.0f, -1.0f,
             1.0f, 1.0f,
             1.0f, -1.0f
     };
-    private float[] textureCoordinate = {
+    private final float[] textureCoordinate = {
             0.0f, 1.0f,
             0.0f, 0.0f,
             1.0f, 1.0f,
@@ -73,11 +72,11 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        textureId = createTextureId();
+        createTextureId();
         camera.open(cameraId);
         dataWidth = camera.getPreviewPoint().x;
         dataHeight = camera.getPreviewPoint().y;
-        surfaceTexture = new SurfaceTexture(textureId);
+        surfaceTexture = new SurfaceTexture(texture[0]);
         camera.setPreviewTexture(surfaceTexture);
         camera.preview();
 
@@ -141,14 +140,13 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
         GLES20.glDeleteTextures(1, texture, 0);
     }
 
-    private int createTextureId() {
+    private void createTextureId() {
         GLES20.glGenTextures(1, texture, 0);
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texture[0]);
         GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
         GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
         GLES20.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
-        return texture[0];
     }
 
     public SurfaceTexture getSurfaceTexture() {
