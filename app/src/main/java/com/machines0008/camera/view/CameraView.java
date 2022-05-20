@@ -63,7 +63,7 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer 
         cameraDrawer.onDrawFrame(gl);
     }
 
-    public void takePicture(Camera.ShutterCallback shutter, Camera.PictureCallback raw, Camera.PictureCallback jpeg) {
-        cameraDrawer.takePicture(shutter, raw, jpeg);
+    public void takePicture(CameraDrawer.Callback callback) {
+        cameraDrawer.takePicture(callback);
     }
 }

@@ -1,15 +1,14 @@
 package com.machines0008.camera.view;
 
-import android.graphics.Bitmap;
 import android.graphics.SurfaceTexture;
-import android.hardware.Camera;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 
+import com.machines0008.camera.utils.GLES20Utils;
+
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -22,6 +21,8 @@ import javax.microedition.khronos.opengles.GL10;
  * Usage:
  **/
 public class CameraDrawer implements GLSurfaceView.Renderer {
+    private int[] texture = new int[1];
+    private Callback callback;
     private final String vertexShaderCode = "" +
             "attribute vec4 vPosition;" +
             "attribute vec2 vCoordinate;" +
@@ -80,33 +81,9 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
         camera.setPreviewTexture(surfaceTexture);
         camera.preview();
 
-        int vs = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
-        GLES20.glShaderSource(vs, vertexShaderCode);
-        GLES20.glCompileShader(vs);
-
-        int fs = GLES20.glCreateShader(GLES20.GL_FRAGMENT_SHADER);
-        GLES20.glShaderSource(fs, fragmentShaderCode);
-        GLES20.glCompileShader(fs);
-
-        program = GLES20.glCreateProgram();
-
-        GLES20.glAttachShader(program, vs);
-        GLES20.glAttachShader(program, fs);
-        GLES20.glLinkProgram(program);
-        GLES20.glDeleteShader(vs);
-        GLES20.glDeleteShader(fs);
-
-        ByteBuffer bbVertexPosition = ByteBuffer.allocateDirect(vertexPosition.length * 4);
-        bbVertexPosition.order(ByteOrder.nativeOrder());
-        fbVertex = bbVertexPosition.asFloatBuffer();
-        fbVertex.put(vertexPosition);
-        fbVertex.position(0);
-
-        ByteBuffer bbFragmentCoordinate = ByteBuffer.allocateDirect(textureCoordinate.length * 4);
-        bbFragmentCoordinate.order(ByteOrder.nativeOrder());
-        fbFragment = bbFragmentCoordinate.asFloatBuffer();
-        fbFragment.put(textureCoordinate);
-        fbFragment.position(0);
+        program = GLES20Utils.createGlProgram(vertexShaderCode, fragmentShaderCode);
+        fbVertex = GLES20Utils.genBuffer(vertexPosition);
+        fbFragment = GLES20Utils.genBuffer(textureCoordinate);
     }
 
     @Override
@@ -122,6 +99,9 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
         if (null != surfaceTexture) {
             surfaceTexture.updateTexImage();
         }
+
+        ByteBuffer mBuffer = ByteBuffer.allocate(width * height * 4);
+
         GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
@@ -140,14 +120,13 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
         GLES20.glVertexAttribPointer(mHCoord, 2, GLES20.GL_FLOAT, false, 0, fbFragment);
 
         int glChangeColor = GLES20.glGetUniformLocation(program, "changeColor");
-        GLES20.glUniform3fv(glChangeColor, 1, new float[]{0.333f, 0.333f, 0.334f}, 0);
 
         int mHMatrix = GLES20.glGetUniformLocation(program, "vMatrix");
         GLES20.glUniformMatrix4fv(mHMatrix, 1, false, matrix, 0);
 
         int mHCoordMatrix = GLES20.glGetUniformLocation(program, "vCoordMatrix");
         GLES20.glUniformMatrix4fv(mHCoordMatrix, 1, false, new float[]{
-                1, 0, 0, 0,
+                1, 0, 1, 0,
                 0, 1, 0, 0,
                 0, 0, 1, 0,
                 0, 0, 0, 1
@@ -155,10 +134,14 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
         GLES20.glDisableVertexAttribArray(mHPosition);
         GLES20.glDisableVertexAttribArray(mHCoord);
+        GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, mBuffer);
+        if (callback != null) {
+            callback.onCall(width, height, mBuffer);
+        }
+        GLES20.glDeleteTextures(1, texture, 0);
     }
 
     private int createTextureId() {
-        int[] texture = new int[1];
         GLES20.glGenTextures(1, texture, 0);
         GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, texture[0]);
         GLES20.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
@@ -191,8 +174,12 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
         }
     }
 
-    public void takePicture(Camera.ShutterCallback shutter, Camera.PictureCallback raw, Camera.PictureCallback jpeg) {
-        camera.takePicture(shutter, raw, jpeg);
+    public void takePicture(Callback callback) {
+        this.callback = callback;
+    }
+
+    public interface Callback {
+        void onCall(int width, int height, ByteBuffer data);
     }
 
 }

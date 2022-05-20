@@ -13,13 +13,20 @@ import java.nio.FloatBuffer;
  * Usage:
  **/
 public class GLES20Utils {
-    private GLES20Utils() {}
+    private GLES20Utils() {
+    }
 
     public static int genShader(int createShader, String shaderCode) {
         int shader = GLES20.glCreateShader(createShader);
         GLES20.glShaderSource(shader, shaderCode);
         GLES20.glCompileShader(shader);
         return shader;
+    }
+
+    public static int createGlProgram(String vertexSourceCode, String fragmentSourceCode) {
+        int vertexShader = GLES20Utils.genShader(GLES20.GL_VERTEX_SHADER, vertexSourceCode);
+        int fragmentShader = GLES20Utils.genShader(GLES20.GL_FRAGMENT_SHADER, fragmentSourceCode);
+        return GLES20Utils.linkProgramShader(vertexShader, fragmentShader);
     }
 
     public static int linkProgramShader(int vs, int fs) {

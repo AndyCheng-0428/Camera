@@ -15,9 +15,11 @@ import android.view.View;
 import android.widget.ImageView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.machines0008.camera.view.CameraDrawer;
 import com.machines0008.camera.view.CameraView;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
 public class CameraActivity extends AppCompatActivity {
     private static final String TAG = CameraActivity.class.getSimpleName();
@@ -39,20 +41,16 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     private void initListener() {
-        fabCamera.setOnClickListener(v -> {
-            cameraView.takePicture(() -> {
-
-            }, (data, camera) -> {
-
-            }, (data, camera) -> {
-                Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                Matrix rotateMatrix = new Matrix();
-                rotateMatrix.postRotate(-90.0f);
-                imageView.setImageBitmap(Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), rotateMatrix, true));
-                bitmap.recycle();
-            });
-
-        });
+        fabCamera.setOnClickListener(v -> cameraView.takePicture((width, height, data) -> runOnUiThread(() -> {
+            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            bitmap.copyPixelsFromBuffer(data);
+            Matrix matrix = new Matrix();
+            matrix.setScale(1, -1); //水平翻轉 並垂直翻轉
+            Bitmap adjustedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            bitmap.recycle();
+            imageView.setImageBitmap(adjustedBitmap);
+            data.clear();
+        })));
     }
 
     private void initView() {
