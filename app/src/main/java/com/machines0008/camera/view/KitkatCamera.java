@@ -4,7 +4,6 @@ import android.graphics.Point;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.util.Log;
-import android.view.SurfaceHolder;
 
 import java.io.IOException;
 
@@ -21,19 +20,25 @@ public class KitkatCamera {
     private Point picturePoint;
     private Point previewPoint;
 
-    public boolean open(int cameraId) {
+    /**
+     * 開啟相機
+     * @param cameraId 0:主鏡頭 1:前鏡頭
+     */
+    public void open(int cameraId) {
         camera = Camera.open(cameraId);
         if (null == camera) {
-            return false;
+            return;
         }
         Camera.Parameters parameters = camera.getParameters();
         pictureSize = parameters.getPictureSize();
         previewSize = parameters.getPreviewSize();
         picturePoint = new Point(pictureSize.height, pictureSize.width);
         previewPoint = new Point(previewSize.height, previewSize.width);
-        return true;
     }
 
+    /**
+     * 相機預覽
+     */
     public void preview() {
         if (null == camera) {
             return;
@@ -42,6 +47,9 @@ public class KitkatCamera {
         focus();
     }
 
+    /**
+     * 相機關閉
+     */
     public void close() {
         if (null == camera) {
             return;
@@ -50,12 +58,15 @@ public class KitkatCamera {
         camera.release();
     }
 
+    /**
+     * 鏡頭對焦
+     */
     public void focus() {
         if (null == camera) {
             return;
         }
         camera.cancelAutoFocus();
-        camera.autoFocus((success, camera) -> Log.i("Camera", success? "對焦成功": "對焦失敗"));
+        camera.autoFocus((success, camera) -> Log.i("Camera", success ? "對焦成功" : "對焦失敗"));
     }
 
     public void setPreviewTexture(SurfaceTexture surfaceTexture) {

@@ -8,8 +8,8 @@ import android.opengl.Matrix;
 
 import com.machines0008.camera.utils.GLES20Utils;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -22,8 +22,6 @@ import javax.microedition.khronos.opengles.GL10;
  * Usage:
  **/
 public class CameraDrawer implements GLSurfaceView.Renderer {
-    private final int[] texture = new int[1];
-    private ByteBuffer mBuffer;
     private static final String vertexShaderCode = "" +
             "attribute vec4 vPosition;" +
             "attribute vec2 vCoordinate;" +
@@ -42,15 +40,6 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
             "void main() {" +
             "   gl_FragColor = texture2D(vTexture, textureCoordinate);" +
             "}";
-    private FloatBuffer fbVertex;
-    private FloatBuffer fbFragment;
-    private final float[] matrix = new float[16];
-    private int width, height;
-    private int dataWidth, dataHeight;
-    private final KitkatCamera camera;
-    private SurfaceTexture surfaceTexture;
-    private int program;
-    private int cameraId = 0;
     private final float[] vertexPosition = {
             -1.0f, 1.0f,
             -1.0f, -1.0f,
@@ -63,6 +52,20 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
             1.0f, 1.0f,
             1.0f, 0.0f
     };
+
+    private final int[] texture = new int[1];
+    private ByteBuffer mBuffer;
+    private FloatBuffer fbVertex;
+    private FloatBuffer fbFragment;
+    private final float[] matrix = new float[16];
+    private int width, height;
+    private int dataWidth, dataHeight;
+
+    private SurfaceTexture surfaceTexture;
+    private int program;
+    private int cameraId = 0;
+
+    private final KitkatCamera camera;
 
     public CameraDrawer() {
         camera = new KitkatCamera();
@@ -79,9 +82,10 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
         camera.preview();
 
         program = GLES20Utils.createGlProgram(vertexShaderCode, fragmentShaderCode);
-        fbVertex = GLES20Utils.genBuffer(vertexPosition);
-        fbFragment = GLES20Utils.genBuffer(textureCoordinate);
         GLES20.glUseProgram(program);
+        fbVertex = GLES20Utils.genBuffer(vertexPosition);
+
+        fbFragment = GLES20Utils.genBuffer(textureCoordinate);
     }
 
     @Override
@@ -100,7 +104,6 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
         ByteBuffer mBuffer = ByteBuffer.allocate(width * height * 4);
         GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         int mHTexture = GLES20.glGetUniformLocation(program, "vTexture");
