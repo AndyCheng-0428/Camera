@@ -8,13 +8,11 @@ import android.os.Bundle;
 import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.machines0008.camera.view.CameraView;
 
 public class CameraActivity extends AppCompatActivity {
-    private static final String TAG = CameraActivity.class.getSimpleName();
     private CameraView cameraView;
     private ImageView imageView;
     private FloatingActionButton fabCamera;
@@ -23,7 +21,7 @@ public class CameraActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.CAMERA}, CAMERA_REQUEST_CODE);
             return;
         }
@@ -37,7 +35,7 @@ public class CameraActivity extends AppCompatActivity {
             Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             bitmap.copyPixelsFromBuffer(data);
             Matrix matrix = new Matrix();
-            matrix.setScale(1, -1); //水平翻轉 並垂直翻轉
+            matrix.setScale(1, -1); //垂直翻轉
             Bitmap adjustedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             bitmap.recycle();
             imageView.setImageBitmap(adjustedBitmap);
@@ -55,6 +53,12 @@ public class CameraActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         cameraView.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        cameraView.onDestroyed();
     }
 
     @Override

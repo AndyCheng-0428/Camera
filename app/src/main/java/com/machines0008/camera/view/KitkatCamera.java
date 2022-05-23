@@ -3,6 +3,8 @@ package com.machines0008.camera.view;
 import android.graphics.Point;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.util.Log;
+import android.view.SurfaceHolder;
 
 import java.io.IOException;
 
@@ -37,6 +39,7 @@ public class KitkatCamera {
             return;
         }
         camera.startPreview();
+        focus();
     }
 
     public void close() {
@@ -47,11 +50,12 @@ public class KitkatCamera {
         camera.release();
     }
 
-    public void takePicture(Camera.ShutterCallback shutter, Camera.PictureCallback raw, Camera.PictureCallback jpeg) {
+    public void focus() {
         if (null == camera) {
             return;
         }
-        camera.takePicture(shutter, raw, jpeg);
+        camera.cancelAutoFocus();
+        camera.autoFocus((success, camera) -> Log.i("Camera", success? "對焦成功": "對焦失敗"));
     }
 
     public void setPreviewTexture(SurfaceTexture surfaceTexture) {

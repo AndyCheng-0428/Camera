@@ -58,4 +58,19 @@ public class CameraView extends GLSurfaceView implements GLSurfaceView.Renderer 
     public void takePicture(CameraDrawer.Callback callback) {
         cameraDrawer.takePicture(callback);
     }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        cameraDrawer.onResume();
+    }
+
+    public void onDestroyed() {
+        cameraDrawer.onDestroyed();
+    }
 }

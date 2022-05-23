@@ -8,6 +8,7 @@ import android.opengl.Matrix;
 
 import com.machines0008.camera.utils.GLES20Utils;
 
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
@@ -22,7 +23,7 @@ import javax.microedition.khronos.opengles.GL10;
  **/
 public class CameraDrawer implements GLSurfaceView.Renderer {
     private final int[] texture = new int[1];
-    private Callback callback;
+    private ByteBuffer mBuffer;
     private static final String vertexShaderCode = "" +
             "attribute vec4 vPosition;" +
             "attribute vec2 vCoordinate;" +
@@ -36,12 +37,9 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
     private static final String fragmentShaderCode = "" +
             "#extension GL_OES_EGL_image_external : require \r\n" +
             "precision mediump float;" +
-            "uniform vec3 changeColor;" +
             "varying vec2 textureCoordinate;" +
             "uniform samplerExternalOES vTexture;" +
             "void main() {" +
-            "   vec4 nColor = texture2D(vTexture, textureCoordinate);" +
-            "   float c = nColor.r * changeColor.r + nColor.g * changeColor.g + nColor.b * changeColor.b;" +
             "   gl_FragColor = texture2D(vTexture, textureCoordinate);" +
             "}";
     private FloatBuffer fbVertex;
@@ -52,7 +50,7 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
     private final KitkatCamera camera;
     private SurfaceTexture surfaceTexture;
     private int program;
-    private int cameraId = 1;
+    private int cameraId = 0;
     private final float[] vertexPosition = {
             -1.0f, 1.0f,
             -1.0f, -1.0f,
@@ -83,6 +81,7 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
         program = GLES20Utils.createGlProgram(vertexShaderCode, fragmentShaderCode);
         fbVertex = GLES20Utils.genBuffer(vertexPosition);
         fbFragment = GLES20Utils.genBuffer(textureCoordinate);
+        GLES20.glUseProgram(program);
     }
 
     @Override
@@ -98,13 +97,11 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
         if (null != surfaceTexture) {
             surfaceTexture.updateTexImage();
         }
-
         ByteBuffer mBuffer = ByteBuffer.allocate(width * height * 4);
-
         GLES20.glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
 
-        GLES20.glUseProgram(program);
+
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
         int mHTexture = GLES20.glGetUniformLocation(program, "vTexture");
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
@@ -117,8 +114,6 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
         int mHCoord = GLES20.glGetAttribLocation(program, "vCoordinate");
         GLES20.glEnableVertexAttribArray(mHCoord);
         GLES20.glVertexAttribPointer(mHCoord, 2, GLES20.GL_FLOAT, false, 0, fbFragment);
-
-        int glChangeColor = GLES20.glGetUniformLocation(program, "changeColor");
 
         int mHMatrix = GLES20.glGetUniformLocation(program, "vMatrix");
         GLES20.glUniformMatrix4fv(mHMatrix, 1, false, matrix, 0);
@@ -134,9 +129,7 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
         GLES20.glDisableVertexAttribArray(mHPosition);
         GLES20.glDisableVertexAttribArray(mHCoord);
         GLES20.glReadPixels(0, 0, width, height, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, mBuffer);
-        if (callback != null) {
-            callback.onCall(width, height, mBuffer);
-        }
+        this.mBuffer = mBuffer.duplicate();
         GLES20.glDeleteTextures(1, texture, 0);
     }
 
@@ -168,16 +161,24 @@ public class CameraDrawer implements GLSurfaceView.Renderer {
         if (cameraId == 1) {
             Matrix.rotateM(matrix, 0, 90, 0, 0, 1);
         } else {
+            Matrix.scaleM(matrix, 0, -1, 1, 1);
             Matrix.rotateM(matrix, 0, 270, 0, 0, 1);
         }
     }
 
     public void takePicture(Callback callback) {
-        this.callback = callback;
+        callback.onCall(width, height, mBuffer);
     }
 
     public interface Callback {
         void onCall(int width, int height, ByteBuffer data);
     }
 
+    public void onResume() {
+        camera.focus();
+    }
+
+    public void onDestroyed() {
+        camera.close();
+    }
 }
